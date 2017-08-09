@@ -1,11 +1,13 @@
 import os
 import re
 
+
 def actual_storage_available(path):
     filesystem_stats = os.statvfs(path)
     block_size = filesystem_stats.f_frsize
     blocks_available = filesystem_stats.f_bavail
     return block_size * blocks_available
+
 
 def _get_part_files(directory):
     filenames = os.listdir(directory)
@@ -16,7 +18,9 @@ def _get_part_files(directory):
 
 class LocalStorage:
 
-    def __init__(self, root_directory, storage_measure=actual_storage_available, capacity_percent=0.85):
+    def __init__(self, root_directory,
+                 storage_measure=actual_storage_available,
+                 capacity_percent=0.85):
         self._root_directory = root_directory
         self._storage_measure = storage_measure
         self._capacity_percent = capacity_percent
@@ -24,10 +28,13 @@ class LocalStorage:
         if len(app_filenames) == 0:
             self._filenum = 0
         else:
-            self._filenum = max(map(lambda filename: int(filename[len('part_'):]), app_filenames))
+            self._filenum = max(
+                map(lambda filename: int(filename[len('part_'):]),
+                    app_filenames))
 
     def available_storage(self):
-        return int(self._storage_measure(self._root_directory) * self._capacity_percent)
+        return int(self._storage_measure(self._root_directory) *
+                   self._capacity_percent)
 
     def has_space(self, data):
         """See if storage has enough space.
@@ -52,6 +59,7 @@ class LocalStorage:
             f.write(token)
             f.write('\n')
 
+
 class MockStorage:
 
     def __init__(self, capacity_bytes):
@@ -71,6 +79,6 @@ class MockStorage:
         if self._bytes_used + len(data) > self._capacity_bytes:
             raise RuntimeError('Not enough space remaining to store data.')
         self._bytes_used += len(data)
-    
+
     def log_resumption(self, token):
         pass

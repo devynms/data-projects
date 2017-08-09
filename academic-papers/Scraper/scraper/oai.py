@@ -6,8 +6,8 @@ OAI version 2.
 
 from bs4 import BeautifulSoup
 
-class Verbs:
 
+class Verbs:
     GET_RECORD = 'GetRecord'
     IDENTIFY = 'Identify'
     LIST_IDENTIFIERS = 'ListIdentifiers'
@@ -16,9 +16,10 @@ class Verbs:
     LIST_SETS = 'ListSets'
 
     all_verbs = {
-            GET_RECORD, IDENTIFY, LIST_IDENTIFIERS, LIST_METADATA_FORMATS,
-            LIST_RECORDS, LIST_SETS
-        }
+        GET_RECORD, IDENTIFY, LIST_IDENTIFIERS, LIST_METADATA_FORMATS,
+        LIST_RECORDS, LIST_SETS
+    }
+
 
 class Success:
 
@@ -28,14 +29,16 @@ class Success:
     def __str__(self):
         return f'Success[{self.data}]'
 
+
 class HttpStatus:
-    
+
     def __init__(self, code, data):
         self.code = code
         self.data = data
 
     def __str__(self):
         return f'HttpStatus[code={self.code},data={self.data}]'
+
 
 class ApplicationError:
 
@@ -49,25 +52,45 @@ class ApplicationError:
     NO_SET_HIERARCHY = 'noSetHierarchy'
 
     VALID_ERRORS = {
-            BAD_ARGUMENT,
-            BAD_RESUMPTION_TOKEN,
-            BAD_VERB,
-            CANNOT_DISSEMINATE_FORMAT,
-            ID_DOES_NOT_EXIST,
-            NO_RECORDS_MATCH,
-            NO_METADATA_FORMATS,
-            NO_SET_HIERARCHY
-        }
-    
+        BAD_ARGUMENT,
+        BAD_RESUMPTION_TOKEN,
+        BAD_VERB,
+        CANNOT_DISSEMINATE_FORMAT,
+        ID_DOES_NOT_EXIST,
+        NO_RECORDS_MATCH,
+        NO_METADATA_FORMATS,
+        NO_SET_HIERARCHY
+    }
+
     APPLICABLE_VERBS = {
-            BAD_ARGUMENT:  Verbs.all_verbs,
-            BAD_RESUMPTION_TOKEN: { Verbs.LIST_IDENTIFIERS, Verbs.LIST_RECORDS, Verbs.LIST_SETS },
+            BAD_ARGUMENT: Verbs.all_verbs,
+            BAD_RESUMPTION_TOKEN: {
+                Verbs.LIST_IDENTIFIERS,
+                Verbs.LIST_RECORDS,
+                Verbs.LIST_SETS
+            },
             BAD_VERB: set(),
-            CANNOT_DISSEMINATE_FORMAT: { Verbs.GET_RECORD, Verbs.LIST_IDENTIFIERS, Verbs.LIST_RECORDS },
-            ID_DOES_NOT_EXIST: { Verbs.GET_RECORD, Verbs.LIST_METADATA_FORMATS },
-            NO_RECORDS_MATCH: { Verbs.LIST_IDENTIFIERS, Verbs.LIST_RECORDS },
-            NO_METADATA_FORMATS: { Verbs.LIST_METADATA_FORMATS },
-            NO_SET_HIERARCHY: { Verbs.LIST_SETS, Verbs.LIST_IDENTIFIERS, Verbs.LIST_RECORDS }
+            CANNOT_DISSEMINATE_FORMAT: {
+                Verbs.GET_RECORD,
+                Verbs.LIST_IDENTIFIERS,
+                Verbs.LIST_RECORDS
+            },
+            ID_DOES_NOT_EXIST: {
+                Verbs.GET_RECORD,
+                Verbs.LIST_METADATA_FORMATS
+            },
+            NO_RECORDS_MATCH: {
+                Verbs.LIST_IDENTIFIERS,
+                Verbs.LIST_RECORDS
+            },
+            NO_METADATA_FORMATS: {
+                Verbs.LIST_METADATA_FORMATS
+            },
+            NO_SET_HIERARCHY: {
+                Verbs.LIST_SETS,
+                Verbs.LIST_IDENTIFIERS,
+                Verbs.LIST_RECORDS
+            }
         }
 
     def __init__(self, error, error_text, data):
@@ -79,6 +102,7 @@ class ApplicationError:
 
     def __str__(self):
         return f'ApplicationError[{self.error}, {self.error_text}'
+
 
 def base_oai_request(response_handler, verb, arguments={}):
     """ Sends a raw OAI-PMH request, and returns the response.
@@ -114,31 +138,38 @@ def base_oai_request(response_handler, verb, arguments={}):
             return Success(response.content)
 
 
-def request_list_records(response_handler, metadata_prefix='oai_dc', time_from=None, time_until=None, select_set=None):
+def request_list_records(response_handler, metadata_prefix='oai_dc',
+                         time_from=None, time_until=None, select_set=None):
     """Calls the ListRecords method, with an initial set of parameters.
     Return: see base_oai_request
     """
     arguments = {}
     arguments['metadataPrefix'] = metadata_prefix
-    if time_from: arguments['from'] = time_from
-    if time_until: arguments['until'] = time_until
-    if select_set: arguments['set'] = select_set
+    if time_from:
+        arguments['from'] = time_from
+    if time_until:
+        arguments['until'] = time_until
+    if select_set:
+        arguments['set'] = select_set
     return base_oai_request(
-            response_handler=response_handler,
-            verb='ListRecords',
-            arguments=arguments
-        )
+        response_handler=response_handler,
+        verb='ListRecords',
+        arguments=arguments
+    )
+
 
 def resume_request_list_records(response_handler, resumption_token):
     """Call the ListIdentifiers method, using a resumption token.
     Return: see base_oai_request
     """
     return base_oai_request(
-            response_handler=response_handler,
-            verb='ListRecords',
-            arguments={
-                'resumptionToken': resumption_token
-            })
+        response_handler=response_handler,
+        verb='ListRecords',
+        arguments={
+            'resumptionToken': resumption_token
+        }
+    )
+
 
 def resumption_token_from_response(response_data):
     """Might raise, for now"""
@@ -147,5 +178,3 @@ def resumption_token_from_response(response_data):
     if not resumption_token:
         raise RuntimeError('resumption not implemented')
     return resumption_token.text
-
-
