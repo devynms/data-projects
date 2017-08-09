@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 
 
 class Verbs:
+
     GET_RECORD = 'GetRecord'
     IDENTIFY = 'Identify'
     LIST_IDENTIFIERS = 'ListIdentifiers'
@@ -15,7 +16,7 @@ class Verbs:
     LIST_RECORDS = 'ListRecords'
     LIST_SETS = 'ListSets'
 
-    all_verbs = {
+    ALL_VERBS = {
         GET_RECORD, IDENTIFY, LIST_IDENTIFIERS, LIST_METADATA_FORMATS,
         LIST_RECORDS, LIST_SETS
     }
@@ -63,7 +64,7 @@ class ApplicationError:
     }
 
     APPLICABLE_VERBS = {
-            BAD_ARGUMENT: Verbs.all_verbs,
+            BAD_ARGUMENT: Verbs.ALL_VERBS,
             BAD_RESUMPTION_TOKEN: {
                 Verbs.LIST_IDENTIFIERS,
                 Verbs.LIST_RECORDS,
@@ -101,7 +102,7 @@ class ApplicationError:
         self.data = data
 
     def __str__(self):
-        return f'ApplicationError[{self.error}, {self.error_text}'
+        return f'ApplicationError[{self.error}, {self.error_text}]'
 
 
 def base_oai_request(response_handler, verb, arguments={}):
