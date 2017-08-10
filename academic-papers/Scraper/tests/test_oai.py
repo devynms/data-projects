@@ -6,6 +6,7 @@ import requests
 
 # UUT
 import oai
+import result
 
 #
 # Utility functions
@@ -129,8 +130,9 @@ def test_base_oai_request_handles_http_error_codes(base_url, http_code):
             base_url,
             status=http_code)
     response = oai.base_oai_request(response_handler, oai.Verbs.IDENTIFY)
-    assert isinstance(response, oai.HttpStatus)
-    assert response.code == http_code
+    assert response.type == result.Result.ERROR
+    assert isinstance(response.get(), oai.HttpStatus)
+    assert response.get().code == http_code
 
 @httpretty.activate
 def test_base_oai_request_handles_application_errors(base_url, error_response):
@@ -142,11 +144,12 @@ def test_base_oai_request_handles_application_errors(base_url, error_response):
         xml_data = f.read()
     httpretty.register_uri(httpretty.POST, base_url, status=200, body=xml_data)
     response = oai.base_oai_request(response_handler, oai.Verbs.LIST_IDENTIFIERS)
-    assert isinstance(response, oai.ApplicationError)
-    assert response.error == code
+    assert response.type == result.Result.ERROR
+    assert isinstance(response.get(), oai.ApplicationError)
+    assert response.get().error == code
     # MAINTENANCE NOTE:
     # Testing for correct payload should belong in another test in the long run
-    assert response.data == xml_data
+    assert response.get().data == xml_data
 
 @httpretty.activate
 def test_base_oai_request_handles_success(base_url, success_response):
@@ -155,10 +158,11 @@ def test_base_oai_request_handles_success(base_url, success_response):
         xml_data = f.read()
     httpretty.register_uri(httpretty.POST, base_url, status=200, body=xml_data)
     response = oai.base_oai_request(response_handler, oai.Verbs.LIST_IDENTIFIERS)
-    assert isinstance(response, oai.Success)
+    assert response.type == result.Result.SUCCESS
     # MAINTENANCE NOTE
     # need to test payload, probably elsewhere
-    assert response.data == xml_data
+    [data] = response.get()
+    assert data == xml_data
 
 @httpretty.activate
 def test_oai_request_list_records_sends_expected_request(base_url):

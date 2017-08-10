@@ -5,6 +5,7 @@ OAI version 2.
 """
 
 from bs4 import BeautifulSoup
+from result import result_of, error_of
 
 
 class Verbs:
@@ -22,23 +23,14 @@ class Verbs:
     }
 
 
-class Success:
-
-    def __init__(self, data):
-        self.data = data
-
-    def __str__(self):
-        return f'Success[{self.data}]'
-
-
 class HttpStatus:
 
-    def __init__(self, code, data):
+    def __init__(self, code, response):
         self.code = code
-        self.data = data
+        self.response = response
 
     def __str__(self):
-        return f'HttpStatus[code={self.code},data={self.data}]'
+        return f'HttpStatus[code={self.code},data={self.response}]'
 
 
 class ApplicationError:
@@ -126,7 +118,7 @@ def base_oai_request(response_handler, verb, arguments={}):
     data['verb'] = verb
     response = response_handler(data)
     if response.status_code != 200:
-        return HttpStatus(response.status_code, response.content)
+        return error_of(HttpStatus(response.status_code, response))
     else:
         response.encoding = 'utf-8'
         xml_text = response.text
@@ -134,9 +126,10 @@ def base_oai_request(response_handler, verb, arguments={}):
         if xml_soup.error is not None:
             error = xml_soup.error['code']
             error_text = xml_soup.error.get_text()
-            return ApplicationError(error, error_text, response.content)
+            return \
+                error_of(ApplicationError(error, error_text, response.content))
         else:
-            return Success(response.content)
+            return result_of(response.content)
 
 
 def request_list_records(response_handler, metadata_prefix='oai_dc',
@@ -177,5 +170,5 @@ def resumption_token_from_response(response_data):
     xml_data = BeautifulSoup(response_data, 'lxml-xml')
     resumption_token = xml_data.resumptionToken
     if not resumption_token:
-        raise RuntimeError('resumption not implemented')
+        return None
     return resumption_token.text

@@ -41,6 +41,21 @@ class _Result:
         else:
             return result
 
+    def filter(self, pattern):
+        if not re.fullmatch(r'(\*|_)*', pattern):
+            raise ValueError(f'{pattern} is not a valid filter pattern')
+        if self.type == Result.ERROR:
+            return self
+        if len(pattern) != len(self._inner):
+            raise ValueError(f'{pattern} has length {len(pattern)}, '
+                             f'but result only has {len(self._inner)} '
+                             f'objects.')
+        inner = []
+        for (flag, obj) in zip(pattern, self._inner):
+            if flag == '*':
+                inner.append(obj)
+        return _Result(Result.SUCCESS, inner)
+
     def get(self):
         """Should be wrapped in type check"""
         return self._inner
