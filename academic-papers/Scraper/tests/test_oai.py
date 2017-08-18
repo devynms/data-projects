@@ -35,6 +35,7 @@ def get_error_code(filename):
         idx += 1
     return code
 
+
 def get_success_method(filename):
     s_idx = len('success_response_')
     x_idx = len('.xml')
@@ -58,11 +59,13 @@ def get_success_method(filename):
         idx += 1
     return method
 
+
 def get_error_xml_filenames():
     import os
     data_path = os.path.join(os.path.dirname(__file__), 'data/')
     paths = os.listdir(data_path)
     return filter(lambda path: 'error' in path, paths)
+
 
 def get_success_xml_filenames():
     import os
@@ -70,9 +73,11 @@ def get_success_xml_filenames():
     paths = os.listdir(data_path)
     return filter(lambda path: 'success' in path, paths)
 
+
 def data_file_path(filename):
     import os
     return os.path.join(os.path.dirname(__file__), 'data', filename)
+
 
 def response_handler(data):
     return requests.post('http://archive.org/oai', data)
@@ -93,15 +98,18 @@ def test_get_error_code():
 def base_url():
     return 'http://archive.org/oai'
 
+
 @pytest.fixture(scope='module',
                 params=[201, 204, 301, 400, 404, 500, 503])
 def http_code(request):
     return request.param 
 
+
 @pytest.fixture(scope='module',
                 params=get_error_xml_filenames())
 def error_response(request):
     return (request.param, get_error_code(request.param))
+
 
 @pytest.fixture(scope='module',
                 params=get_success_xml_filenames())
@@ -117,11 +125,13 @@ def success_response(request):
 # We're not testing for correctness of server,
 # .. but we should test that we are detecting an incorrect server.
 
+
 @httpretty.activate
 def test_base_oai_request_sends_post_to_url(base_url):
     httpretty.register_uri(httpretty.POST, base_url)
     response = oai.base_oai_request(response_handler, oai.Verbs.IDENTIFY)
     assert httpretty.has_request()
+
 
 @httpretty.activate
 def test_base_oai_request_handles_http_error_codes(base_url, http_code):
@@ -129,10 +139,10 @@ def test_base_oai_request_handles_http_error_codes(base_url, http_code):
             httpretty.POST,
             base_url,
             status=http_code)
-    response = oai.base_oai_request(response_handler, oai.Verbs.IDENTIFY)
-    assert response.type == result.Result.ERROR
-    assert isinstance(response.get(), oai.HttpStatus)
-    assert response.get().code == http_code
+    with pytest.raises(oai.HttpStatusError) as err_info:
+        response = oai.base_oai_request(response_handler, oai.Verbs.IDENTIFY)
+    assert err_info.value.code == http_code
+
 
 @httpretty.activate
 def test_base_oai_request_handles_application_errors(base_url, error_response):
@@ -143,13 +153,13 @@ def test_base_oai_request_handles_application_errors(base_url, error_response):
     with open(data_file_path(filename), 'rb') as f:
         xml_data = f.read()
     httpretty.register_uri(httpretty.POST, base_url, status=200, body=xml_data)
-    response = oai.base_oai_request(response_handler, oai.Verbs.LIST_IDENTIFIERS)
-    assert response.type == result.Result.ERROR
-    assert isinstance(response.get(), oai.ApplicationError)
-    assert response.get().error == code
+    with pytest.raises(oai.ApplicationError) as err_info:
+        response = oai.base_oai_request(response_handler, oai.Verbs.LIST_IDENTIFIERS)
+    assert err_info.value.error == code
     # MAINTENANCE NOTE:
     # Testing for correct payload should belong in another test in the long run
-    assert response.get().data == xml_data
+    assert err_info.value.data == xml_data
+
 
 @httpretty.activate
 def test_base_oai_request_handles_success(base_url, success_response):
@@ -157,12 +167,11 @@ def test_base_oai_request_handles_success(base_url, success_response):
     with open(data_file_path(filename), 'rb') as f:
         xml_data = f.read()
     httpretty.register_uri(httpretty.POST, base_url, status=200, body=xml_data)
-    response = oai.base_oai_request(response_handler, oai.Verbs.LIST_IDENTIFIERS)
-    assert response.type == result.Result.SUCCESS
+    data = oai.base_oai_request(response_handler, oai.Verbs.LIST_IDENTIFIERS)
     # MAINTENANCE NOTE
     # need to test payload, probably elsewhere
-    [data] = response.get()
     assert data == xml_data
+
 
 @httpretty.activate
 def test_oai_request_list_records_sends_expected_request(base_url):
@@ -174,21 +183,22 @@ def test_oai_request_list_records_sends_expected_request(base_url):
         nonlocal outer_data
         outer_data = inner_data
         return requests.post(base_url, inner_data)
-    response = oai.request_list_records(request_handler)
+    oai.request_list_records(request_handler)
     assert outer_data['verb'] == 'ListRecords'
     assert set(outer_data.keys()) <= {'from', 'until', 'set', 'verb', 'metadataPrefix'}
 
+
+@httpretty.activate
 def test_oai_resume_list_records_sends_expected_request(base_url):
     with open(data_file_path('success_response_list_records.xml'), 'rb') as f:
         data = f.read()
-    httpretty.register_uri(httpretty.POST, base_url, status=200, body=data)
     httpretty.register_uri(httpretty.POST, base_url, status=200, body=data)
     outer_data = None
     def request_handler(inner_data):
         nonlocal outer_data
         outer_data = inner_data
         return requests.post(base_url, inner_data)
-    response = oai.resume_request_list_records(request_handler, 'TOKEN')
+    oai.resume_request_list_records(request_handler, 'TOKEN')
     assert outer_data['verb'] == 'ListRecords'
     assert outer_data['resumptionToken'] == 'TOKEN'
     assert set(outer_data.keys()) == {'verb', 'resumptionToken'}

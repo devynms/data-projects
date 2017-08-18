@@ -5,7 +5,6 @@ OAI version 2.
 """
 
 from bs4 import BeautifulSoup
-from result import result_of, error_of
 
 
 class Verbs:
@@ -23,7 +22,7 @@ class Verbs:
     }
 
 
-class HttpStatus:
+class HttpStatusError(Exception):
 
     def __init__(self, code, response):
         self.code = code
@@ -33,7 +32,7 @@ class HttpStatus:
         return f'HttpStatus[code={self.code},data={self.response}]'
 
 
-class ApplicationError:
+class ApplicationError(Exception):
 
     BAD_ARGUMENT = 'badArgument'
     BAD_RESUMPTION_TOKEN = 'badResumptionToken'
@@ -97,6 +96,7 @@ class ApplicationError:
         return f'ApplicationError[{self.error}, {self.error_text}]'
 
 
+
 def base_oai_request(response_handler, verb, arguments={}):
     """ Sends a raw OAI-PMH request, and returns the response.
     Return:
@@ -118,7 +118,7 @@ def base_oai_request(response_handler, verb, arguments={}):
     data['verb'] = verb
     response = response_handler(data)
     if response.status_code != 200:
-        return error_of(HttpStatus(response.status_code, response))
+        raise HttpStatusError(response.status_code, response)
     else:
         response.encoding = 'utf-8'
         xml_text = response.text
@@ -126,10 +126,9 @@ def base_oai_request(response_handler, verb, arguments={}):
         if xml_soup.error is not None:
             error = xml_soup.error['code']
             error_text = xml_soup.error.get_text()
-            return \
-                error_of(ApplicationError(error, error_text, response.content))
+            raise ApplicationError(error, error_text, response.content)
         else:
-            return result_of(response.content)
+            return response.content
 
 
 def request_list_records(response_handler, metadata_prefix='oai_dc',

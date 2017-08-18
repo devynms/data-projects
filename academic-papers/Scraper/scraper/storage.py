@@ -1,7 +1,6 @@
 import os
 import re
 
-
 def actual_storage_available(path):
     filesystem_stats = os.statvfs(path)
     block_size = filesystem_stats.f_frsize
@@ -56,7 +55,10 @@ class LocalStorage:
 
     def log_resumption(self, token):
         with open(os.path.join(self._root_directory, 'resumption'), 'a') as f:
-            f.write(token)
+            if token is None:
+                f.write('NONE')
+            else:
+                f.write(token)
             f.write('\n')
 
 
@@ -64,21 +66,27 @@ class MockStorage:
 
     def __init__(self, capacity_bytes):
         self._capacity_bytes = capacity_bytes
-        self._bytes_used = 0
+        self.bytes_used = 0
+        self.store_count = 0
+        self.log_resumption_count = 0
+
+    def available_storage(self):
+        return self._capacity_bytes - self.bytes_used
 
     def has_space(self, data):
         """See if storage has enough space.
         data - must by bytes
         """
-        return self._bytes_used + len(data) <= self._capacity_bytes
+        return self.bytes_used + len(data) <= self._capacity_bytes
 
     def store(self, data):
         """Store data in data store.
         data - must be bytes
         """
-        if self._bytes_used + len(data) > self._capacity_bytes:
+        if self.bytes_used + len(data) > self._capacity_bytes:
             raise RuntimeError('Not enough space remaining to store data.')
-        self._bytes_used += len(data)
+        self.bytes_used += len(data)
+        self.store_count += 1
 
     def log_resumption(self, token):
-        pass
+        self.log_resumption_count += 1
