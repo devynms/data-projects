@@ -1,6 +1,6 @@
 from functools import partial
 from time import sleep
-import oai
+from scraper import oai
 
 
 class WaitError(Exception):

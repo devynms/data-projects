@@ -1,12 +1,7 @@
-# Test libraries
 import httpretty
-import context
 import pytest
 import requests
-
-# UUT
-import oai
-import result
+from scraper import oai
 
 #
 # Utility functions

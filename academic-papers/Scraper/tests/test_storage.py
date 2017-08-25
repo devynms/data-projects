@@ -1,12 +1,8 @@
-# Test libraries
-import context
 import pytest
 import os
 import shutil
 import pathlib
-
-# UUT
-import storage
+from scraper import storage
 
 #
 # Fixtures

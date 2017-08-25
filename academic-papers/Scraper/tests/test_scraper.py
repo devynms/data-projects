@@ -1,10 +1,7 @@
-
-# Test libraries
 import pytest
-import context
-import oai
-import storage
-import scraper
+from scraper import oai
+from scraper import storage
+from scraper import scraper
 
 
 @pytest.fixture(scope='module')

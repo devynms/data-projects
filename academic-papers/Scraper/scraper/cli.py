@@ -1,9 +1,9 @@
 import argparse
-import scraper
 import requests
-import storage
-import oai
 from functools import partial
+from scraper import storage
+from scraper import oai
+from scraper import scraper
 
 
 def handler(url):
