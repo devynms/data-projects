@@ -1,11 +1,20 @@
 import os
 import re
+from gevent.os import tp_write
 
+
+# Might belong in an architecture specific module...
 def actual_storage_available(path):
     filesystem_stats = os.statvfs(path)
     block_size = filesystem_stats.f_frsize
     blocks_available = filesystem_stats.f_bavail
     return block_size * blocks_available
+
+
+# Might belong in an architecture specific module...
+def actual_file_writer(path, mode, data):
+    with open(path, mode) as f:
+        tp_write(f, data)
 
 
 def _get_part_files(directory):
@@ -19,10 +28,12 @@ class LocalStorage:
 
     def __init__(self, root_directory,
                  storage_measure=actual_storage_available,
-                 capacity_percent=0.85):
+                 capacity_percent=0.85,
+                 write_file=actual_file_writer):
         self._root_directory = root_directory
         self._storage_measure = storage_measure
         self._capacity_percent = capacity_percent
+        self._write_file = write_file
         app_filenames = _get_part_files(self._root_directory)
         if len(app_filenames) == 0:
             self._filenum = 0
@@ -50,16 +61,15 @@ class LocalStorage:
         self._filenum += 1
         filename = f'part_{self._filenum:04d}'
         filepath = os.path.join(self._root_directory, filename)
-        with open(filepath, 'wb') as f:
-            f.write(data)
+        self._write_file(filepath, 'wb', data)
 
     def log_resumption(self, token):
-        with open(os.path.join(self._root_directory, 'resumption'), 'a') as f:
-            if token is None:
-                f.write('NONE')
-            else:
-                f.write(token)
-            f.write('\n')
+        path = os.path.join(self._root_directory, 'resumption')
+        if token is None:
+            data = 'NONE'
+        else:
+            data = token + '\n'
+        self._write_file(path, 'a', data)
 
 
 class MockStorage:

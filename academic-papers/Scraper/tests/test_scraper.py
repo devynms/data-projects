@@ -63,6 +63,7 @@ def test_store_stores_once_with_available_space():
 def test_3sr_stores_good_request_once():
     request = lambda: b'some data'
     stg = storage.MockStorage(100)
+    worker = scraper.Worker(stg, request)
     scraper.send_and_store_single_request(stg, request)
     assert stg.store_count == 1
     assert stg.log_resumption_count == 1

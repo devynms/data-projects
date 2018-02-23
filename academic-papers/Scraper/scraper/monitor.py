@@ -1,13 +1,15 @@
-import pykka
+import pykka.gevent
+from scraper import listener
 
 
-class Monitor(pykka.ThreadingActor):
+class Monitor(pykka.gevent.GeventActor):
 
     def __init__(self):
         pass
 
     def on_start(self):
-        pass
+        server = listener.create_server(8080)
+        listener.serve_request(self, server)
 
     def on_stop(self):
         pass
@@ -16,4 +18,11 @@ class Monitor(pykka.ThreadingActor):
         pass
 
     def on_receive(self, message):
-        pass
+        if message['msg'] == 'serve':
+            request = message['request']
+            server = message['server']
+            response = { 'request': request, 'response': 'data' }
+            server.send(str(response))
+            listener.serve_request(self, server)
+        elif message['msg'] == 'update':
+            pass
