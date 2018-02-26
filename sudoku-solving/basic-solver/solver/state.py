@@ -24,7 +24,7 @@ class State:
     def __str__(self):
         return f'State{{{self._state}}}'
 
-    def neighbors(self):
+    def all_neighbors(self):
         neighbors = []
         for (row, values) in enumerate(self._state):
             for (col, elem) in enumerate(values):
@@ -33,6 +33,15 @@ class State:
                         next_state = _substitute(self._state, row, col, val)
                         if _is_legal(next_state):
                             neighbors.append(State(next_state))
+        return neighbors
+
+    def neighbors(self, row, col):
+        neighbors = []
+        elem = self._state[row, col]
+        for value in range(1, 10):
+            next_state = _substitute(self._state, row, col, value)
+            if _is_legal(next_state):
+                neighbors.append(State(next_state))
         return neighbors
 
 
