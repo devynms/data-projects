@@ -24,10 +24,14 @@ class State:
     def __str__(self):
         return f'State{{{self._state}}}'
 
+    def __repr__(self):
+        return f'State{{{repr(self._state)}}}'
+
     def all_neighbors(self):
         neighbors = []
-        for (row, values) in enumerate(self._state):
-            for (col, elem) in enumerate(values):
+        for row in range(0, 9):
+            for col in range(0, 9):
+                elem = self._state[row, col]
                 if elem == 0:
                     for val in range(1, 10):
                         next_state = _substitute(self._state, row, col, val)
@@ -38,11 +42,18 @@ class State:
     def neighbors(self, row, col):
         neighbors = []
         elem = self._state[row, col]
-        for value in range(1, 10):
-            next_state = _substitute(self._state, row, col, value)
-            if _is_legal(next_state):
-                neighbors.append(State(next_state))
+        if elem == 0:
+            for value in range(1, 10):
+                next_state = _substitute(self._state, row, col, value)
+                if _is_legal(next_state):
+                    neighbors.append(State(next_state))
         return neighbors
+
+    def is_legal(self):
+        return _is_legal(self._state)
+
+    def is_goal(self):
+        return not np.any(self._state == 0)
 
 
 def _substitute(state, row, col, val):
