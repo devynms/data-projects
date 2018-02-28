@@ -5,7 +5,6 @@
 #include <vector>
 
 namespace solver {
-namespace state {
 
 static constexpr int NROWS = 9;
 static constexpr int NCOLS = 9;
@@ -19,6 +18,7 @@ class State {
 
   bool is_goal() const;
   bool is_valid() const;
+  bool is_filled_in(int row, int col) const;
   std::string display() const;
   std::vector<State> next_states(int row, int col) const;
 
@@ -26,7 +26,6 @@ class State {
   std::array<int, NROWS * NCOLS> m_state;
 };
 
-}
 }
 
 #endif //C_BRUTE_FORCE_STATE_H

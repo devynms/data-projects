@@ -1,7 +1,7 @@
 #include "state.h"
 #include <sstream>
 
-using namespace solver::state;
+using namespace solver;
 
 static constexpr int NVALUES = 9;
 static constexpr int BOX_NROWS = 3;
@@ -154,5 +154,8 @@ std::string State::display() const {
     }
   }
   return os.str();
+}
+bool State::is_filled_in(int row, int col) const {
+  return get(m_state, row, col) != 0;
 }
 

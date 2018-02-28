@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "state.h"
 
-using solver::state::State;
+using solver::State;
 
 static State SIMPLE_STATE({
     0, 0, 0,  0, 0, 0,  0, 0, 0,
@@ -93,4 +93,10 @@ TEST(SolverState, StateNextStates) {
     EXPECT_EQ(simple_next_states.size(), 9);
     auto initial_next_states = INITIAL_STATE.next_states(0, 0);
     EXPECT_EQ(initial_next_states.size(), 3);
+}
+
+TEST(SolverState, UniquePtrStateOperatorEquals) {
+    std::unique_ptr<State> lhs = std::make_unique<State>(GOAL_STATE);
+    std::unique_ptr<State> rhs = std::make_unique<State>(GOAL_STATE);
+    EXPECT_TRUE(*lhs == *rhs);
 }

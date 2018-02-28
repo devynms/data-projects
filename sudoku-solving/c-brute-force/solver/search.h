@@ -4,13 +4,10 @@
 #include "state.h"
 
 namespace solver {
-namespace search {
 
+std::unique_ptr<solver::State>
+search(const solver::State &initial_state);
 
-    std::unique_ptr<solver::state::State>
-    search(const solver::state::State& initial_state);
-
-}
 }
 
 #endif //C_BRUTE_FORCE_SEARCH_H

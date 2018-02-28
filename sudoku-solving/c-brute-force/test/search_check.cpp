@@ -3,8 +3,8 @@
 #include "state.h"
 #include "search.h"
 
-using solver::state::State;
-using solver::search::search;
+using solver::State;
+using solver::search;
 
 static State GOAL_STATE ({
   4, 3, 5,  2, 6, 9,  7, 8, 1,
@@ -45,6 +45,7 @@ std::string display(const std::unique_ptr<State>& state) {
 TEST(SolverSearch, SearchTwoOff) {
   std::unique_ptr<State> result = search(TWO_OFF);
   std::unique_ptr<State> expected = std::make_unique<State>(GOAL_STATE);
-  EXPECT_EQ(result, expected)
+  ASSERT_NE(result, nullptr);
+  EXPECT_EQ(*result, *expected)
             << "Expected " << display(result) << " to equal " << display(expected);
 }

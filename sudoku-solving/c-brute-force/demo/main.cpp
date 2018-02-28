@@ -1,9 +1,9 @@
 #include <iostream>
-#include "../solver/state.h"
-#include "../solver/search.h"
+#include "state.h"
+#include "search.h"
 
-using solver::state::State;
-using solver::search::search;
+using solver::State;
+using solver::search;
 
 static State INITIAL_STATE({
   0, 0, 0,  2, 6, 0,  7, 0, 1,
