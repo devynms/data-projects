@@ -296,3 +296,9 @@ TEST(TestSearch, TwoOffSearch) {
   ASSERT_TRUE(results.found_solution());
   EXPECT_EQ(results.goal_state(), GOAL_STATE);
 }
+
+TEST(TestSearch, SearchInitialState) {
+  SearchResults results = solver::search(INITIAL_STATE);
+  ASSERT_TRUE(results.found_solution());
+  EXPECT_EQ(results.goal_state(), GOAL_STATE);
+}

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <array>
 #include <vector>
+#include <memory>
 
 namespace solver {
 
@@ -51,7 +52,7 @@ struct square_iter {
 
 square_iter squares_begin();
 square_iter squares_end();
-square_iter& operator++(square_iter&);
+square_iter operator++(square_iter);
 bool operator==(const square_iter&, const square_iter&);
 bool operator!=(const square_iter&, const square_iter&);
 

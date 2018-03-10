@@ -1,5 +1,9 @@
 #include "solver.h"
 
+#include <memory>
+#include <vector>
+#include <array>
+
 
 namespace solver {
 
@@ -45,17 +49,16 @@ internal::squares_end()
 }
 
 
-internal::square_iter&
-internal::operator++(square_iter& pos)
+internal::square_iter
+internal::operator++(square_iter pos)
 {
   if (pos.row == 8 && pos.col == 8) {
-    pos =  { 10, 10 };
+    return { 10, 10 };
   } else if (pos.col == 8) {
-    pos =  { pos.row + 1, 0 };
+    return { pos.row + 1, 0 };
   } else {
-    pos = { pos.row, pos.col + 1 };
+    return { pos.row, pos.col + 1 };
   }
-  return pos;
 }
 
 
@@ -227,12 +230,11 @@ GameState::next_legal_states(idx_type row, idx_type col) const
 bool
 GameState::row_contains_duplicate(idx_type row) const
 {
-  // value_counts[X-1] = # of times the number X appeared
-  int value_counts[9] = { 0 };
+  int value_counts[10] = { 0 };
   for (idx_type col = 0; col < NUM_COLS; col++) {
-    value_counts[m_state(row, col) - 1]++;
+    value_counts[m_state(row, col)]++;
   }
-  for (std::size_t i = 0; i < 9; i++) {
+  for (std::size_t i = 1; i <= 9; i++) {
     if (value_counts[i] > 1) {
       return true;
     }
@@ -244,12 +246,11 @@ GameState::row_contains_duplicate(idx_type row) const
 bool
 GameState::col_contains_duplicate(idx_type col) const
 {
-  // value_counts[X-1] = # of times the number X appeared
-  int value_counts[9] = { 0 };
+  int value_counts[10] = { 0 };
   for (idx_type row = 0; row < NUM_ROWS; row++) {
-    value_counts[m_state(row, col) - 1]++;
+    value_counts[m_state(row, col)]++;
   }
-  for (std::size_t i = 0; i < 9; i++) {
+  for (std::size_t i = 1; i <= 9; i++) {
     if (value_counts[i] > 1) {
       return true;
     }
@@ -265,14 +266,13 @@ GameState::box_contains_duplicate(idx_type box_row, idx_type box_col) const
   idx_type row_end = row_begin + 3;
   idx_type col_begin = box_col * 3;
   idx_type col_end = col_begin + 3;
-  // value_counts[X-1] = # of times the number X appeared
-  int value_counts[9] = { 0 };
+  int value_counts[10] = { 0 };
   for (idx_type row = row_begin; row < row_end; row++) {
     for (idx_type col = col_begin; col < col_end; col++) {
-      value_counts[m_state(row, col) - 1]++;
+      value_counts[m_state(row, col)]++;
     }
   }
-  for (std::size_t i = 0; i < 9; i++) {
+  for (std::size_t i = 1; i <= 9; i++) {
     if (value_counts[i] > 1) {
       return true;
     }
