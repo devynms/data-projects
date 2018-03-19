@@ -9,6 +9,7 @@
 using solver::GameState;
 using solver::internal::StateDescription;
 using solver::SearchResults;
+using solver::BruteForceSearch;
 
 
 static StateDescription SIMPLE_DESCRIPTION({
@@ -159,8 +160,8 @@ TEST(TestSquareIter, SquareIterSequence) {
   auto actual_itr = solver::internal::squares_begin();
   while (expected_itr != std::end(expected_sequence) && actual_itr != solver::internal::squares_end()) {
     EXPECT_EQ(*expected_itr, actual_itr);
-    ++expected_itr;
-    ++actual_itr;
+    expected_itr = ++expected_itr;
+    actual_itr = ++actual_itr;
   }
   EXPECT_EQ(expected_itr, std::end(expected_sequence));
   EXPECT_EQ(actual_itr, solver::internal::squares_end());
@@ -275,30 +276,41 @@ TEST(TestGameState, LegalNextStatesEmptyResult) {
 
 
 TEST(TestSearchResults, NoFoundSolution) {
-  SearchResults uut(nullptr);
+  SearchResults uut(nullptr, 0);
   EXPECT_FALSE(uut.found_solution());
 }
 
 TEST(TestSearchResults, FoundSolution) {
-  SearchResults uut(std::make_unique<GameState>(GOAL_STATE));
+  SearchResults uut(std::make_unique<GameState>(GOAL_STATE), 0);
   EXPECT_TRUE(uut.found_solution());
 }
 
 TEST(TestSearchResults, GetSolution) {
-  SearchResults uut(std::make_unique<GameState>(GOAL_STATE));
+  SearchResults uut(std::make_unique<GameState>(GOAL_STATE), 0);
   ASSERT_TRUE(uut.found_solution());
   EXPECT_EQ(uut.goal_state(), GOAL_STATE);
 }
 
+TEST(TestSearchResults, ReturnsCount) {
+  SearchResults uut(std::make_unique<GameState>(GOAL_STATE), 100);
+  EXPECT_EQ(uut.states_explored(), 100);
+}
 
-TEST(TestSearch, TwoOffSearch) {
-  SearchResults results = solver::search(TWO_OFF_STATE);
+
+TEST(TestBruteForceSearch, TwoOffSearch) {
+  SearchResults results = BruteForceSearch().search(TWO_OFF_STATE);
   ASSERT_TRUE(results.found_solution());
   EXPECT_EQ(results.goal_state(), GOAL_STATE);
 }
 
-TEST(TestSearch, SearchInitialState) {
-  SearchResults results = solver::search(INITIAL_STATE);
+TEST(TestBruteForceSearch, SearchInitialState) {
+  SearchResults results = BruteForceSearch().search(INITIAL_STATE);
   ASSERT_TRUE(results.found_solution());
   EXPECT_EQ(results.goal_state(), GOAL_STATE);
 }
+
+TEST(TestBruteForceSearch, CountsStatesExplored) {
+  SearchResults results = BruteForceSearch().search(TWO_OFF_STATE);
+  EXPECT_TRUE(results.states_explored() > 0);
+}
+

@@ -50,7 +50,7 @@ internal::squares_end()
 
 
 internal::square_iter
-internal::operator++(square_iter pos)
+internal::operator++(const square_iter& pos)
 {
   if (pos.row == 8 && pos.col == 8) {
     return { 10, 10 };
@@ -73,33 +73,6 @@ bool
 internal::operator!=(const square_iter& lhs, const square_iter& rhs)
 {
   return !(lhs == rhs);
-}
-
-
-std::unique_ptr<GameState>
-internal::square_dfs(const GameState &state, internal::square_iter pos)
-{
-  if (pos == internal::squares_end()) {
-    if (state.is_goal()) {
-      return std::make_unique<GameState>(state);
-    } else {
-      return std::unique_ptr<GameState>();
-    }
-  }
-  if (state.is_filled(pos.row, pos.col)) {
-    return square_dfs(state, ++pos);
-  }
-  auto next_states = state.next_legal_states(pos.row, pos.col);
-  if (next_states.size() == 0) {
-    return std::unique_ptr<GameState>();
-  }
-  for (const auto& next_state : next_states) {
-    auto result = square_dfs(next_state, ++pos);
-    if (result) {
-      return result;
-    }
-  }
-  return std::unique_ptr<GameState>();
 }
 
 
@@ -281,8 +254,9 @@ GameState::box_contains_duplicate(idx_type box_row, idx_type box_col) const
 }
 
 
-SearchResults::SearchResults(std::unique_ptr<GameState> goal_state)
-  : m_goal_state(std::move(goal_state))
+SearchResults::SearchResults(std::unique_ptr<GameState> goal_state, counter_type count)
+  : m_goal_state(std::move(goal_state)),
+    m_count(count)
 {}
 
 
@@ -290,6 +264,13 @@ bool
 SearchResults::found_solution() const
 {
   return m_goal_state != nullptr;
+}
+
+
+counter_type
+SearchResults::states_explored() const
+{
+  return m_count;
 }
 
 
@@ -308,10 +289,38 @@ SearchResults::goal_state() const
 
 
 SearchResults
-search(const GameState& initial_state)
+BruteForceSearch::search(const GameState &initial_state)
 {
-  std::unique_ptr<GameState> result = internal::square_dfs(initial_state, internal::squares_begin());
-  return SearchResults(std::move(result));
+  std::unique_ptr<GameState> result = this->square_dfs(initial_state, internal::squares_begin());
+  return SearchResults(std::move(result), m_count);
+}
+
+
+std::unique_ptr<GameState>
+BruteForceSearch::square_dfs(const GameState &state, const internal::square_iter& pos)
+{
+  m_count += 1;
+  if (pos == internal::squares_end()) {
+    if (state.is_goal()) {
+      return std::make_unique<GameState>(state);
+    } else {
+      return std::unique_ptr<GameState>();
+    }
+  }
+  if (state.is_filled(pos.row, pos.col)) {
+    return square_dfs(state, ++pos);
+  }
+  auto next_states = state.next_legal_states(pos.row, pos.col);
+  if (next_states.size() == 0) {
+    return std::unique_ptr<GameState>();
+  }
+  for (const auto& next_state : next_states) {
+    auto result = square_dfs(next_state, ++pos);
+    if (result) {
+      return result;
+    }
+  }
+  return std::unique_ptr<GameState>();
 }
 
 

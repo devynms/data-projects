@@ -46,7 +46,7 @@ solver_basic_search(PyObject* self, PyObject* args)
     return NULL;
   }
 
-  const solver::SearchResults results = solver::search(initial_state);
+  const solver::SearchResults results = solver::BruteForceSearch().search(initial_state);
   if (!results.found_solution()) {
     Py_RETURN_NONE;
   }

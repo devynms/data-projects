@@ -5,6 +5,7 @@
 #include <array>
 #include <vector>
 #include <memory>
+#include <cstdint>
 
 namespace solver {
 
@@ -13,6 +14,7 @@ class GameState;
 class GameStateBuilder;
 
 using idx_type = std::size_t;
+using counter_type = std::int_fast64_t;
 
 static constexpr idx_type NUM_ROWS = 9;
 static constexpr idx_type NUM_COLS = 9;
@@ -52,12 +54,9 @@ struct square_iter {
 
 square_iter squares_begin();
 square_iter squares_end();
-square_iter operator++(square_iter);
+square_iter operator++(const square_iter&);
 bool operator==(const square_iter&, const square_iter&);
 bool operator!=(const square_iter&, const square_iter&);
-
-std::unique_ptr<GameState> square_dfs(const GameState& state, square_iter pos);
-
 
 } // namespace solver::internal
 
@@ -105,20 +104,43 @@ class GameState {
   internal::StateDescription m_state;
 };
 
+
 class SearchResults {
  public:
-  SearchResults(std::unique_ptr<GameState> goal_state);
+  SearchResults(std::unique_ptr<GameState> goal_state, counter_type count);
 
   bool found_solution() const;
+  counter_type states_explored() const;
   GameState& goal_state();
   const GameState& goal_state() const;
 
  private:
-  std::unique_ptr<GameState> m_goal_state;
+  std::unique_ptr<GameState>  m_goal_state;
+  counter_type                m_count;
 };
 
 
-SearchResults search(const GameState& initial_state);
+class SearchInterface {
+ public:
+  virtual SearchResults search(const GameState& initial_state) = 0;
+};
+
+
+class BruteForceSearch : public SearchInterface {
+ public:
+  BruteForceSearch() : m_count(0) {}
+  BruteForceSearch(const BruteForceSearch&) = default;
+  BruteForceSearch(BruteForceSearch&&) = default;
+  BruteForceSearch& operator=(const BruteForceSearch&) = default;
+  BruteForceSearch& operator=(BruteForceSearch&&) = default;
+
+  SearchResults search(const GameState& initial_state) override;
+
+ private:
+  std::unique_ptr<GameState> square_dfs(const GameState& state, const internal::square_iter& pos);
+
+  counter_type m_count;
+};
 
 
 } // namespace solver
