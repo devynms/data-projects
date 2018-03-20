@@ -4,12 +4,14 @@
 #include <algorithm>
 #include <memory>
 
+#include <armadillo>
 #include "gtest/gtest.h"
 
 using solver::GameState;
 using solver::internal::StateDescription;
 using solver::SearchResults;
 using solver::BruteForceSearch;
+using solver::SquareHeuristic;
 
 
 static StateDescription SIMPLE_DESCRIPTION({
@@ -314,3 +316,15 @@ TEST(TestBruteForceSearch, CountsStatesExplored) {
   EXPECT_TRUE(results.states_explored() > 0);
 }
 
+
+TEST(TestSquareHeuristic, HeuristicReturnsExpectedOrder) {
+  arma::mat weights (9, 83);
+  arma::vec weights_column = { 9.0, 3.0, 1.0, 6.0, 2.0, 7.0, 8.0, 5.0, 4.0 };
+  weights.each_col() = weights_column;
+  std::vector<int> state_squares (83, 1);
+  GameState input_state = GameState::from_collection(std::begin(state_squares), std::end(state_squares));
+  SquareHeuristic heuristic(weights);
+  std::vector<int> actual = heuristic(input_state, 1, 1);
+  std::vector<int> expected = { 1, 7, 6, 4, 8, 9, 2, 5, 3 };
+  EXPECT_EQ(actual, expected);
+}

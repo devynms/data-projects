@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <limits>
 
 
 namespace solver {
@@ -323,5 +324,29 @@ BruteForceSearch::square_dfs(const GameState &state, const internal::square_iter
   return std::unique_ptr<GameState>();
 }
 
+
+std::vector<int>
+SquareHeuristic::operator()(const GameState &state, idx_type row, idx_type col)
+{
+  arma::mat input(83, 1);
+  arma::uword idx = 0;
+  for (idx_type row = 0; row < NUM_ROWS; row++) {
+    for (idx_type col = 0; col < NUM_COLS; col++) {
+      input(idx) = static_cast<double>(state(row, col));
+      idx++;
+    }
+  }
+  input(81, 0) = static_cast<double>(row);
+  input(82, 0) = static_cast<double>(col);
+  arma::mat output = m_theta * input;
+  std::vector<int> softmax_values;
+  softmax_values.reserve(9);
+  for (int i = 0; i < 9; i++) {
+    arma::uword max_idx = output.index_max();
+    softmax_values.push_back(static_cast<int>(max_idx) + 1);
+    output(max_idx) = -std::numeric_limits<double>::infinity();
+  }
+  return softmax_values;
+}
 
 } // namespace solver

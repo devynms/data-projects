@@ -7,6 +7,9 @@
 #include <memory>
 #include <cstdint>
 
+#include <armadillo>
+
+
 namespace solver {
 
 
@@ -139,6 +142,38 @@ class BruteForceSearch : public SearchInterface {
  private:
   std::unique_ptr<GameState> square_dfs(const GameState& state, const internal::square_iter& pos);
 
+  counter_type m_count;
+};
+
+
+class SquareHeuristic {
+ public:
+  SquareHeuristic() = delete;
+  SquareHeuristic(const SquareHeuristic&) = default;
+  SquareHeuristic(SquareHeuristic&&) = default;
+  SquareHeuristic& operator=(const SquareHeuristic&) = default;
+  SquareHeuristic& operator=(SquareHeuristic&&) = default;
+
+  SquareHeuristic(arma::mat theta) : m_theta(std::move(theta)) {}
+
+  std::vector<int> operator()(const GameState& state, idx_type row, idx_type col);
+
+ private:
+  arma::mat m_theta;
+};
+
+
+class HeuristicSquareSearch : public SearchInterface {
+ public:
+  HeuristicSquareSearch() = default;
+  HeuristicSquareSearch(const HeuristicSquareSearch&) = default;
+  HeuristicSquareSearch(HeuristicSquareSearch&&) = default;
+  HeuristicSquareSearch& operator=(const HeuristicSquareSearch&) = default;
+  HeuristicSquareSearch& operator=(HeuristicSquareSearch&&) = default;
+
+  SearchResults search(const GameState& initial_state) override;
+
+ private:
   counter_type m_count;
 };
 
