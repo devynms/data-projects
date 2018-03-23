@@ -12,6 +12,7 @@ using solver::internal::StateDescription;
 using solver::SearchResults;
 using solver::BruteForceSearch;
 using solver::SquareHeuristic;
+using solver::HeuristicSquareSearch;
 
 
 static StateDescription SIMPLE_DESCRIPTION({
@@ -33,16 +34,16 @@ static GameState SIMPLE_STATE(SIMPLE_DESCRIPTION);
 
 static StateDescription INVALID_DESCRIPTION({
   0, 0, 4,  0, 0, 4,  0, 0, 0,
-  0, 0, 0,  0, 0, 0,  0, 0, 0,
-  0, 0, 0,  0, 0, 0,  0, 0, 0,
+    0, 0, 0,  0, 0, 0,  0, 0, 0,
+    0, 0, 0,  0, 0, 0,  0, 0, 0,
 
-  0, 0, 0,  0, 0, 0,  0, 0, 0,
-  0, 0, 0,  0, 0, 0,  0, 0, 0,
-  0, 0, 0,  0, 0, 0,  0, 0, 0,
+    0, 0, 0,  0, 0, 0,  0, 0, 0,
+    0, 0, 0,  0, 0, 0,  0, 0, 0,
+    0, 0, 0,  0, 0, 0,  0, 0, 0,
 
-  0, 0, 0,  0, 0, 0,  0, 0, 0,
-  0, 0, 0,  0, 0, 0,  0, 0, 0,
-  0, 0, 0,  0, 0, 0,  0, 0, 0
+    0, 0, 0,  0, 0, 0,  0, 0, 0,
+    0, 0, 0,  0, 0, 0,  0, 0, 0,
+    0, 0, 0,  0, 0, 0,  0, 0, 0
 });
 
 static GameState INVALID_STATE(INVALID_DESCRIPTION);
@@ -313,7 +314,7 @@ TEST(TestBruteForceSearch, SearchInitialState) {
 
 TEST(TestBruteForceSearch, CountsStatesExplored) {
   SearchResults results = BruteForceSearch().search(TWO_OFF_STATE);
-  EXPECT_TRUE(results.states_explored() > 0);
+  EXPECT_GT(results.states_explored(), 0);
 }
 
 
@@ -327,4 +328,25 @@ TEST(TestSquareHeuristic, HeuristicReturnsExpectedOrder) {
   std::vector<int> actual = heuristic(input_state, 1, 1);
   std::vector<int> expected = { 1, 7, 6, 4, 8, 9, 2, 5, 3 };
   EXPECT_EQ(actual, expected);
+}
+
+
+TEST(TestHeuristicSquareSearch, TwoOffSearch) {
+  arma::mat weights (9, 83, arma::fill::zeros);
+  SearchResults results = HeuristicSquareSearch(weights).search(TWO_OFF_STATE);
+  ASSERT_TRUE(results.found_solution());
+  EXPECT_EQ(results.goal_state(), GOAL_STATE);
+}
+
+TEST(TestHeuristicSquareSearch, SearchInitialState) {
+  arma::mat weights(9, 83, arma::fill::zeros);
+  SearchResults results = HeuristicSquareSearch(weights).search(INITIAL_STATE);
+  ASSERT_TRUE(results.found_solution());
+  EXPECT_EQ(results.goal_state(), GOAL_STATE);
+}
+
+TEST(TestHeuristicSquareSearch, CountsStatesExplored) {
+  arma::mat weights(9, 83, arma::fill::zeros);
+  SearchResults results = HeuristicSquareSearch(weights).search(INITIAL_STATE);
+  EXPECT_GT(results.states_explored(), 0);
 }

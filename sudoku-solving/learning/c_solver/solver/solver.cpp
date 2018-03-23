@@ -290,7 +290,7 @@ SearchResults::goal_state() const
 
 
 SearchResults
-BruteForceSearch::search(const GameState &initial_state)
+BruteForceSearch::search(const GameState& initial_state)
 {
   std::unique_ptr<GameState> result = this->square_dfs(initial_state, internal::squares_begin());
   return SearchResults(std::move(result), m_count);
@@ -298,7 +298,7 @@ BruteForceSearch::search(const GameState &initial_state)
 
 
 std::unique_ptr<GameState>
-BruteForceSearch::square_dfs(const GameState &state, const internal::square_iter& pos)
+BruteForceSearch::square_dfs(const GameState& state, const internal::square_iter& pos)
 {
   m_count += 1;
   if (pos == internal::squares_end()) {
@@ -326,7 +326,7 @@ BruteForceSearch::square_dfs(const GameState &state, const internal::square_iter
 
 
 std::vector<int>
-SquareHeuristic::operator()(const GameState &state, idx_type row, idx_type col)
+SquareHeuristic::operator()(const GameState& state, idx_type row, idx_type col)
 {
   arma::mat input(83, 1);
   arma::uword idx = 0;
@@ -348,5 +348,42 @@ SquareHeuristic::operator()(const GameState &state, idx_type row, idx_type col)
   }
   return softmax_values;
 }
+
+
+SearchResults
+HeuristicSquareSearch::search(const GameState& initial_state)
+{
+  std::unique_ptr<GameState> result = this->square_dfs(initial_state, internal::squares_begin());
+  return SearchResults(std::move(result), m_count);
+}
+
+
+std::unique_ptr<GameState>
+HeuristicSquareSearch::square_dfs(const GameState& state, const internal::square_iter& pos)
+{
+  m_count += 1;
+  if (pos == internal::squares_end()) {
+    if (state.is_goal()) {
+      return std::make_unique<GameState>(state);
+    } else {
+      return std::unique_ptr<GameState>();
+    }
+  }
+  if (state.is_filled(pos.row, pos.col)) {
+    return square_dfs(state, ++pos);
+  }
+  std::vector<int> heuristic_next_tries = m_heuristic(state, pos.row, pos.col);
+  for (int next_try : heuristic_next_tries) {
+    GameState next_state = state.next_state(pos.row, pos.col, next_try);
+    if (next_state.is_legal()) {
+      auto result = square_dfs(next_state, ++pos);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return std::unique_ptr<GameState>();
+}
+
 
 } // namespace solver

@@ -165,7 +165,8 @@ class SquareHeuristic {
 
 class HeuristicSquareSearch : public SearchInterface {
  public:
-  HeuristicSquareSearch() = default;
+  HeuristicSquareSearch() = delete;
+  HeuristicSquareSearch(SquareHeuristic heuristic) : m_heuristic(std::move(heuristic)), m_count(0) {}
   HeuristicSquareSearch(const HeuristicSquareSearch&) = default;
   HeuristicSquareSearch(HeuristicSquareSearch&&) = default;
   HeuristicSquareSearch& operator=(const HeuristicSquareSearch&) = default;
@@ -174,7 +175,10 @@ class HeuristicSquareSearch : public SearchInterface {
   SearchResults search(const GameState& initial_state) override;
 
  private:
-  counter_type m_count;
+  std::unique_ptr<GameState> square_dfs(const GameState& state, const internal::square_iter& pos);
+
+  SquareHeuristic m_heuristic;
+  counter_type    m_count;
 };
 
 
