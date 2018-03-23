@@ -43,6 +43,7 @@ solver_basic_search(PyObject* self, PyObject* args)
       return NULL;
     }
     values.push_back(static_cast<int>(value));
+    Py_DECREF(value_obj);
   }
 
   const solver::GameState initial_state = solver::GameState::from_collection(std::begin(values), std::end(values));
@@ -150,6 +151,7 @@ _solver_parse_weights(PyObject* seq)
     if (PyErr_Occurred()) {
       return nullptr;
     }
+    Py_DECREF(py_weight);
     elem = weight;
     idx++;
   }
@@ -188,6 +190,7 @@ _solver_parse_state(PyObject* seq)
       return nullptr;
     }
     values.push_back(static_cast<int>(value));
+    Py_DECREF(value_obj);
   }
   GameState state = GameState::from_collection(begin(values), end(values));
   if (!state.is_legal()) {
