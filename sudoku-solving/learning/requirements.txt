@@ -1,9 +1,18 @@
 attrs==17.4.0
--e git+git@github.com:devynms/data-projects.git@296555da1223d790cd0bbea32e20a1924002f786#egg=learning&subdirectory=sudoku-solving/learning
+cycler==0.10.0
+kiwisolver==1.0.1
+-e git+git@github.com:devynms/data-projects.git@5b696d738c794dbac404d0673b074a125e3bcc38#egg=learning&subdirectory=sudoku-solving/learning
+matplotlib==2.2.2
 numpy==1.14.2
 pluggy==0.6.0
 py==1.5.2
 py-cpuinfo==3.3.0
+pyparsing==2.2.0
 pytest==3.4.1
 pytest-benchmark==3.1.1
+python-dateutil==2.7.2
+pytz==2018.3
+scikit-learn==0.19.1
+scipy==1.0.1
 six==1.11.0
+sklearn==0.0
