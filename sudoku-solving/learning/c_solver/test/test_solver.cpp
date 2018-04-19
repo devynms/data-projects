@@ -310,6 +310,7 @@ TEST(TestBruteForceSearch, SearchInitialState) {
   SearchResults results = BruteForceSearch().search(INITIAL_STATE);
   ASSERT_TRUE(results.found_solution());
   EXPECT_EQ(results.goal_state(), GOAL_STATE);
+  EXPECT_EQ(results.states_explored(), 5);
 }
 
 TEST(TestBruteForceSearch, CountsStatesExplored) {

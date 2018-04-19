@@ -1,0 +1,44 @@
+#!/usr/env/bin python3
+from sklearn import linear_model, preprocessing
+import numpy as np
+import code
+
+from training.dataset import load_whole_dataset
+from training.logit import training_set, complete
+
+if __name__ == '__main__':
+    print('Loading...')
+    qs, ss = load_whole_dataset('data/npsudoku.zip')
+    random_indices = np.random.random_integers(0, len(qs), 5000)
+    print('Preparing training set...')
+    train = training_set(qs[random_indices], ss[random_indices])
+    logreg = linear_model.LogisticRegression(
+        C=1e5, solver='sag', multi_class='multinomial')
+    print('Training...')
+    logreg.fit(train.data, train.target)
+    random_indices = np.random.random_integers(0, len(qs), 1000)
+    print('Preparing validation set...')
+    validate = training_set(qs[random_indices], ss[random_indices])
+    print('Validating...')
+    score = logreg.score(validate.data, validate.target)
+    print(f'Score: {score}')
+
+    lb = preprocessing.LabelBinarizer()
+    lb.fit(range(10))
+
+    print('\nExample: ')
+    print(f'Question: {qs[0]} at (0,0) (val={qs[0][0,0]})')
+    print(f'Answer: {ss[0][0,0]}')
+    input = complete(lb, qs[0], ss[0], 0, 0)
+    prediction = logreg.predict_proba([input])
+    print(f'Prediction: {prediction[0]}')
+
+    print('\nExample: ')
+    print(f'Question: {qs[0]} at (0,0) (val={qs[0][8,0]})')
+    print(f'Answer: {ss[0][0,0]}')
+    input = complete(lb, qs[0], ss[0], 8, 0)
+    prediction = logreg.predict_proba([input])
+    print(f'Prediction: {prediction[0]}')
+
+    code.interact(local=locals())
+

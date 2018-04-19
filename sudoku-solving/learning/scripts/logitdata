@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+from training.dataset import load_whole_dataset
+from training.logit import training_set
+import code
+
+if __name__ == '__main__':
+    print('Loading...')
+    qs, ss = load_whole_dataset('data/npsudoku.zip')
+    print('Preparing...')
+    ts = training_set(qs[:2000], ss[:2000])
+    print('Ready.')
+    code.interact(local=locals())
